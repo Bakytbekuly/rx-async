@@ -1,24 +1,45 @@
-import React from 'react';
-import logo from './logo.svg';
+import {useState, useEffect} from 'react';
+import { useAppDispatch,useAppSelector } from './hooksRedux/hooks';
+
+import { fetchTodos,addNewTodo } from './store/slice/todoSlice';
+import NewTodoForm from './components/NewTodoForm';
+import TodoList from './components/TodoList';
+
 import './App.css';
 
+
 function App() {
+  const [text, setText] = useState('');
+  const dispatch = useAppDispatch();
+  const {error,loading}=useAppSelector(state=>state.todos)
+
+  useEffect(()=>{
+    dispatch(fetchTodos())
+  },[dispatch])
+
+  const handleAction = () => {
+    if(text.trim().length) {
+      dispatch(addNewTodo(text));
+      setText('');
+    }
+  }
+  const handleKeyEnter:React.KeyboardEventHandler<HTMLInputElement>=(e)=>{
+      if(e.key==="Enter"){
+        handleAction()
+      }
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className='App'>
+      <NewTodoForm
+        value={text}
+        updateText={setText}
+        handleAction={handleAction}
+        handleKeyEnter={handleKeyEnter}
+      />
+      {loading && <h2>Loading...</h2>}
+      {error && <h2>An error occured: {error}</h2>}
+      <TodoList />
     </div>
   );
 }
